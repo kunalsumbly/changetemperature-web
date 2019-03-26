@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html">
+
+<h:head>
+	<title>Change Temperature</title>
+</h:head>
+<h:body>
+	<h2>JSF Change Temperature</h2>
+	<h:form>
+		<h:outputLabel>Enter temperature to convert:</h:outputLabel>
+		<h:inputText id="inputTemperature" value="#{temperatureBean.inputTemperature}"></h:inputText>
+		<br/>
+		<h:outputLabel>Select source temperature unit:</h:outputLabel>
+		<h:selectOneMenu id="srcTemperatureItems" value="#{temperatureBean.sourceTemperature}">
+			<f:selectItems value="#{temperatureBean.temperatureItems}" />
+		</h:selectOneMenu>
+		<br/>
+		<h:outputLabel>Select Destination temperature unit:</h:outputLabel>
+		<h:selectOneMenu id="destTemperatureItems"	value="#{temperatureBean.destinationTemperature}">
+			<f:selectItems value="#{temperatureBean.temperatureItems}" />
+		</h:selectOneMenu>
+		<br/>
+		<h:commandButton value="submit"	type="submit" action="#{temperatureBean.callRest}"></h:commandButton>
+	</h:form>
+	
+</h:body>
+</html>

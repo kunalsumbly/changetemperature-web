@@ -1,6 +1,7 @@
 package com.codeutils.view.beans;
 
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,9 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.model.SelectItem;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -16,6 +20,8 @@ import com.sun.jersey.api.client.WebResource;
 @Named("temperatureBean")
 @SessionScoped
 public class TemperatureManager implements Serializable {
+
+	private static final String API_URL = "http://localhost:8080/ChangeTemperature/api/temperature";
 	/**
 	 * 
 	 */
@@ -25,6 +31,7 @@ public class TemperatureManager implements Serializable {
 	private String sourceTemperature;
 	private String destinationTemperature;
 	private List<SelectItem> temperatureItems;
+	private String responseFromRest;
 
 	public List<SelectItem> getTemperatureItems() {
 		return temperatureItems;
@@ -71,16 +78,16 @@ public class TemperatureManager implements Serializable {
 	}
 
 	public void callRest() {
-		System.out.println("Called the submit");
+		System.out.println("Called the submit again");
 		System.out.println(this.sourceTemperature);
 		System.out.println(this.destinationTemperature);
 		System.out.println(this.inputTemperature);
 
 		try {
-
+			System.out.println("Calling via Jersey Client");
 			Client client = Client.create();
 
-			WebResource webResource = client.resource("http://localhost:8080/ChangeTemperature/api/temperature");
+			WebResource webResource = client.resource(API_URL);
 			String input = "{\"sourceDestUnit\":\"" + this.sourceTemperature + "_" + this.destinationTemperature
 					+ "\",\"temperatureValue\":" + this.inputTemperature + "}";
 			ClientResponse response = webResource.header("Content-Type", "application/json")
@@ -89,11 +96,12 @@ public class TemperatureManager implements Serializable {
 			if (response.getStatus() != 200) {
 				throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
 			}
-
-			String output = response.getEntity(String.class);
+			JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity(String.class)));
+			JsonObject jsonObject = jsonReader.readObject();
+			responseFromRest = jsonObject.get("temperatureValue").toString();
 
 			System.out.println("Output from Server .... \n");
-			System.out.println(output);
+			System.out.println(responseFromRest);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -110,30 +118,19 @@ public class TemperatureManager implements Serializable {
 	}
 
 	public static void main(String[] args) {
-		try {
 
-			Client client = Client.create();
+		JsonReader jsonReader = Json.createReader(new StringReader("{\"temperatureValue\":38.99}"));
+		JsonObject jsonObject = jsonReader.readObject();
+		System.out.println(jsonObject.get("temperatureValue").toString());
 
-			WebResource webResource = client.resource("http://localhost:8080/ChangeTemperature/api/temperature");
-			String input = "{\"sourceDestUnit\":\"" + "CELSIUS" + "_" + "KELVIN" + "\",\"temperatureValue\":" + 38.99
-					+ "}";
+	}
 
-			ClientResponse response = webResource.header("Content-Type", "application/json")
-					.header("Accept", "application/json").accept("application/json").post(ClientResponse.class, input);
+	public String getResponseFromRest() {
+		return responseFromRest;
+	}
 
-			if (response.getStatus() != 200) {
-				throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
-			}
-
-			String output = response.getEntity(String.class);
-
-			System.out.println("Output from Server .... \n");
-			System.out.println(output);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+	public void setResponseFromRest(String responseFromRest) {
+		this.responseFromRest = responseFromRest;
 	}
 
 }
